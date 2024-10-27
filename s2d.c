@@ -117,7 +117,6 @@ int decoder_decode_byte(struct decoder* decoder, float sample){
   if(fourier_add_sample(&decoder->fourier, sample)){
     float frequency[decoder->fourier.frequency_count];
     fourier_to_frequency(&decoder->fourier, frequency);
-    // TODO: adjust sample count and skip some if necessary based on phase, and total chunk time.
     unsigned byte = 0;
     for(int f=0; f<decoder->fourier.frequency_count; f++){
       if(frequency[f] > 0.5*0.5)
@@ -261,14 +260,12 @@ int main(){
   struct decoder decoder = {
     .fourier.frequency_count = BIT_COUNT,
   };
-  // TODO: determine speed
   for(int32_t x; fread(&x, 4, 1, stdin)>0; ){
     float sample = (float)x / 0x80000000lu;
     int byte = decoder_decode(&decoder, (sample+1)/2*SIGNAL_STREANGTH);
     if(byte >= 0){
       // fprintf(stderr,"%02X\n", byte);
       putchar(byte);
-      // TODO: handle next sync signal
     }
     if(byte == DECODER_RET_EOF)
       break;
